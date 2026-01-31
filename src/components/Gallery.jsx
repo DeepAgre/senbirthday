@@ -12,9 +12,9 @@ const Gallery = () => {
 
   // TEMPLATE: Your photos and messages
   const photos = [
-    { id: 1, url: '/photo1.jpg', message: "This was the day we first..." },
-    { id: 2, url: '/photo2.jpg', message: "I love how you look in this one." },
-    { id: 3, url: '/photo3.jpg', message: "Our favorite spot in Thane!" },
+    { id: 1, url: '/photo1.jpg', message: "murgh musalum was tasty but you tastier hihi" },
+    { id: 2, url: '/photo2.jpg', message: "omg first valentine!!!!!(i love ur eyeshadow gng tickles my pickle)" },
+    { id: 3, url: '/photo3.jpg', message: "I LOVE THIS PHOTO SOOOO MUCHH mrignaini frfr. butters my biscuit everytime" },
   ];
 
   return (
