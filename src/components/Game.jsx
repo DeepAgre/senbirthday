@@ -1,49 +1,121 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Lock, Unlock, Flower } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { motion, useMotionValue, useTransform } from 'framer-motion';
+import { Lock, Unlock, Sparkles, MousePointer2 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 const Game = ({ onUnlock }) => {
-  const [score, setScore] = useState(0);
+  const [clearedPercent, setClearedPercent] = useState(0);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  
+  // Track how many "petals" have been hovered/clicked
+  const [activePetals, setActivePetals] = useState(new Set());
+  const totalPetals = 24; // Grid size for clearing
 
-  const handleClick = () => {
-    if (score < 4) {
-      setScore(s => s + 1);
-    } else {
-      setScore(5);
-      onUnlock();
-      confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 }, colors: ['#ffffff', '#6fc276'] });
-    }
+  const handleInteraction = (id) => {
+    if (isUnlocked) return;
+    
+    setActivePetals((prev) => {
+      const newSet = new Set(prev);
+      newSet.add(id);
+      
+      const newPercent = (newSet.size / totalPetals) * 100;
+      setClearedPercent(newPercent);
+
+      if (newSet.size === totalPetals && !isUnlocked) {
+        triggerUnlock();
+      }
+      return newSet;
+    });
+  };
+
+  const triggerUnlock = () => {
+    setIsUnlocked(true);
+    onUnlock();
+    confetti({
+      particleCount: 150,
+      spread: 70,
+      origin: { y: 0.6 },
+      colors: ['#ffffff', '#1b2e1c', '#88e788']
+    });
   };
 
   return (
     <section className="min-h-screen flex items-center justify-center px-6 py-20">
-      <div className="max-w-4xl w-full bg-white/10 backdrop-blur-md rounded-[3rem] p-12 border border-white/20 text-center text-white">
-        <div className="mb-8 flex justify-center">
-          {score < 5 ? <Lock size={48} className="animate-pulse" /> : <Unlock size={48} />}
-        </div>
+      <div className="max-w-xl w-full bg-white/10 backdrop-blur-xl rounded-[3rem] p-10 border border-white/30 text-center shadow-2xl">
         
-        <h2 className="text-4xl font-serif italic mb-4">The Lily Quest</h2>
-        <p className="mb-10 text-white/70">Catch 5 floating lilies to reveal the memories.</p>
+        <div className="mb-6 flex justify-center">
+          <motion.div
+            animate={isUnlocked ? { scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] } : {}}
+          >
+            {isUnlocked ? (
+              <Unlock size={64} className="text-[#1b2e1c]" />
+            ) : (
+              <Lock size={64} className="text-[#1b2e1c] opacity-50 animate-pulse" />
+            )}
+          </motion.div>
+        </div>
 
-        <div className="relative h-64 bg-black/20 rounded-3xl border-2 border-dashed border-white/20 overflow-hidden shadow-inner">
-          <p className="absolute top-4 left-0 right-0 z-20 font-bold tracking-widest uppercase text-[10px]">Found: {score} / 5</p>
+        <h2 className="text-3xl font-serif italic mb-2 text-[#1b2e1c]">Clear the Garden</h2>
+        <p className="mb-8 text-[#1b2e1c]/70 text-sm italic flex items-center justify-center gap-2">
+          <MousePointer2 size={14} /> Rub away the haze to reveal our story...
+        </p>
+
+        {/* Game Container */}
+        <div className="relative aspect-square max-w-[300px] mx-auto bg-[#1b2e1c]/5 rounded-3xl border-4 border-white/50 overflow-hidden shadow-inner group">
           
-          {[...Array(5)].map((_, i) => (
-            <motion.button
-              key={i}
-              onClick={handleClick}
-              animate={{ 
-                x: [Math.random() * 100, Math.random() * 300, Math.random() * 100],
-                y: [Math.random() * 50, Math.random() * 150, Math.random() * 50]
-              }}
-              transition={{ duration: 4 + i, repeat: Infinity, ease: "linear" }}
-              className={`absolute p-3 bg-white text-green-900 rounded-full shadow-lg ${score > i ? 'hidden' : 'flex'}`}
+          {/* Progress Indicator */}
+          <div className="absolute top-2 left-0 right-0 z-30">
+             <span className="text-[10px] font-bold uppercase tracking-widest text-[#1b2e1c]/40">
+               Discovery: {Math.round(clearedPercent)}%
+             </span>
+          </div>
+
+          {/* The Hidden Content (visible as you clear) */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center">
+            <Sparkles size={40} className="text-[#1b2e1c] mb-4 opacity-80" />
+            <p className="text-[#1b2e1c] font-serif italic font-bold">
+              {isUnlocked ? "Memories Unlocked!" : "Keep going, babybird..."}
+            </p>
+          </div>
+
+          {/* The "Scratch" Grid */}
+          <div className="absolute inset-0 grid grid-cols-4 grid-rows-6 z-20">
+            {[...Array(totalPetals)].map((_, i) => (
+              <motion.div
+                key={i}
+                onMouseEnter={() => handleInteraction(i)}
+                onTouchStart={() => handleInteraction(i)}
+                animate={{ 
+                  opacity: activePetals.has(i) ? 0 : 1,
+                  scale: activePetals.has(i) ? 0.8 : 1 
+                }}
+                className="bg-[#1b2e1c] border border-white/10 cursor-crosshair m-[1px] rounded-sm shadow-sm"
+                transition={{ duration: 0.4 }}
+              />
+            ))}
+          </div>
+
+          {/* Success Overlay */}
+          {isUnlocked && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="absolute inset-0 z-40 bg-[#88e788] flex items-center justify-center"
             >
-              <Flower size={24} />
-            </motion.button>
-          ))}
-          {score === 5 && <p className="flex items-center justify-center h-full text-2xl italic">Damnn boi u fast af chalo scroll karo niche</p>}
+              <p className="text-[#1b2e1c] font-bold italic text-xl animate-bounce">
+                niche scroll kar laadle 💚
+              </p>
+            </motion.div>
+          )}
+        </div>
+
+        <div className="mt-8">
+           <div className="h-1.5 w-full bg-white/20 rounded-full overflow-hidden">
+              <motion.div 
+                className="h-full bg-[#1b2e1c]" 
+                animate={{ width: `${clearedPercent}%` }}
+              />
+           </div>
         </div>
       </div>
     </section>
