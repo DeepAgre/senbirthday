@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700&family=Playfair+Display:italic,wght@700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #88e788; /* Your requested light green */
+  color: #1b2e1c; /* Dark forest green for readability */
+  overflow-x: hidden;
+  overflow-y: auto !important; /* Forces the scrollbar to work */
+  min-height: 100vh;
+}
+
+/* Custom scrollbar to look sleek */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #88e788;
+}
+::-webkit-scrollbar-thumb {
+  background: #6fc276;
+  border-radius: 10px;
+}
